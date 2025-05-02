@@ -67,29 +67,30 @@
  
 
 // Function to fetch cholesterol tests for a specific patient from a FHIR server
-async function fetchImmunizations (patientId) {
-	const client = FHIR.client("https://hapi.fhir.org/baseR4");
+async function fetchImmunizations(patientId) {
+  const url = `https://hapi.fhir.org/baseR4/Immunization?patient=Patient/${patientId}&_count=50`;
+
   try {
-  	const bundle = await client.search()
-    	.forResource("immunization")
-      .where("patient", `Patient/${patientId}`)
-  		.returnBundle("Bundle")
-      .count(200)
-      .execute();
-    const immunizations = bundle.entry.map(entry => entry.resource);
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const bundle = await response.json();
+
+    const immunizations = (bundle.entry || []).map(entry => entry.resource);
     document.getElementById("immunizations").textContent = JSON.stringify(immunizations, null, 2);
-    } catch (error) {
-        console.error("Error fetching immunizations:", error);
-        document.getElementById("immunizations").textContent = "Error fetching immunizations.";
+  } catch (error) {
+    console.error("Error fetching immunizations:", error);
+    document.getElementById("immunizations").textContent = "Error fetching immunizations.";
   }
 }
 
 document.getElementById("fetchImmunizations").addEventListener("click", () => {
-    const patientId = document.getElementById("patientId").value;
-    fetchImmunizations(patientId);
+  const patientId = document.getElementById("patientId").value;
+  fetchImmunizations(patientId);
 });
 // Example usage: Fetch cholesterol tests for a patient with ID '12345'
-fetchCholesterolTests().then(data => {
+fetchImmunizations().then(data => {
     console.log('Cholesterol Tests:', data);
 });
 		
