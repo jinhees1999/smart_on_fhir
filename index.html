@@ -81,7 +81,33 @@ fetchImmunizations().then(data => {
     console.log('Cholesterol Tests:', data);
 });
 		
-		
+
+
+async function fetchAllergies(patientId) {
+  const url = `https://hapi.fhir.org/baseR4/AllergyIntolerance?patient=Patient/${patientId}&_count=50`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const bundle = await response.json();
+    const allergies = (bundle.entry || []).map(e => e.resource);
+    document.getElementById("allergies").textContent =
+      allergies.length
+        ? JSON.stringify(allergies, null, 2)
+        : "No allergies found for this patient.";
+  } catch (error) {
+    console.error("Error fetching allergies:", error);
+    document.getElementById("allergies").textContent = "Error fetching allergies.";
+  }
+}
+
+// Wire up the Allergies button
+document.getElementById("fetchAllergies").addEventListener("click", () => {
+  const patientId = document.getElementById("patientId").value.trim();
+  fetchAllergies(patientId);
+});
+
+	    
 	</script>
 
         <div id="container" style="width:100%; height:200px;"></div>
