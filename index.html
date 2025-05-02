@@ -37,8 +37,10 @@
                 document.getElementById("immunizations").textContent = JSON.stringify(immunizations, null, 2);
 
 		const allergyBundle = await client.request(`AllergyIntolerance?patient=${patient.id}`);
-       		const allergies = allergyBundle.entry?.map(e => e.resource) || [];
-       		document.getElementById("allergies").textContent = JSON.stringify(allergies, null, 2);
+                const allergies = allergyBundle.entry?.map(e => e.resource) || [];
+                document.getElementById("allergies").textContent = allergies.length ? 
+                    JSON.stringify(allergies, null, 2) : "No allergies recorded for this patient.";
+
 
             } catch (err) {
                 console.error(err);
