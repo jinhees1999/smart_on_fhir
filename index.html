@@ -23,6 +23,9 @@
     <h2>Immunizations</h2>
     <div id="immunizations">Loading immunizations...</div>
 
+	<h2>Allergies</h2>
+  	<div id="allergies">Loading allergies...</div>
+
     <script>
         FHIR.oauth2.ready().then(async function(client) {
             try {
@@ -32,17 +35,23 @@
                 const immunizationBundle = await client.request(`Immunization?patient=${patient.id}`);
                 const immunizations = immunizationBundle.entry?.map(e => e.resource) || [];
                 document.getElementById("immunizations").textContent = JSON.stringify(immunizations, null, 2);
+
+		const allergyBundle = await client.request(`AllergyIntolerance?patient=${patient.id}`);
+       		const allergies = allergyBundle.entry?.map(e => e.resource) || [];
+       		document.getElementById("allergies").textContent = JSON.stringify(allergies, null, 2);
+
             } catch (err) {
                 console.error(err);
                 document.getElementById("patient").textContent = "Error: " + err.message;
                 document.getElementById("immunizations").textContent = "Error fetching immunizations.";
+		document.getElementById("allergies").textContent = "Error fetching allergies.";
             }
         }).catch(console.error);
 
 
  
 
-// Function to fetch cholesterol tests for a specific patient from a FHIR server
+// Function to fetch Immunizations for a specific patient from a FHIR server
 async function fetchImmunizations(patientId) {
   const url = `https://hapi.fhir.org/baseR4/Immunization?patient=Patient/${patientId}&_count=50`;
 
