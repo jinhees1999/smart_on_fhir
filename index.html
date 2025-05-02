@@ -1,68 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Example SMART App</title>
-        <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
-        <style>
-            #patient, #meds {
-                font-family: Monaco, monospace;
-                white-space: pre;
-                font-size: 13px;
-                height: 30vh;
-                overflow: scroll;
-                border: 1px solid #CCC;
+<head>
+    <meta charset="UTF-8" />
+    <title>SMART FHIR App – Immunizations</title>
+    <script src="https://cdn.jsdelivr.net/npm/fhirclient/build/fhir-client.js"></script>
+    <style>
+        #patient, #immunizations {
+            font-family: Monaco, monospace;
+            white-space: pre;
+            font-size: 13px;
+            height: 30vh;
+            overflow: scroll;
+            border: 1px solid #CCC;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Current Patient</h2>
+    <div id="patient">Loading patient...</div>
+
+    <h2>Immunizations</h2>
+    <div id="immunizations">Loading immunizations...</div>
+
+    <script>
+        FHIR.oauth2.ready().then(async function(client) {
+            try {
+                const patient = await client.patient.read();
+                document.getElementById("patient").textContent = JSON.stringify(patient, null, 2);
+
+                const immunizationBundle = await client.request(`Immunization?patient=${patient.id}`);
+                const immunizations = immunizationBundle.entry?.map(e => e.resource) || [];
+                document.getElementById("immunizations").textContent = JSON.stringify(immunizations, null, 2);
+            } catch (err) {
+                console.error(err);
+                document.getElementById("patient").textContent = "Error: " + err.message;
+                document.getElementById("immunizations").textContent = "Error fetching immunizations.";
             }
-        </style>
+        }).catch(console.error);
 
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-   
-    </head>
-    <body> 
-        <h4>Current Patient</h4>
-        <div id="patient">Loading...</div>
-        <br/>
-        <h4>Medications</h4>
-        <div id="meds">Loading...</div>
-        <script type="text/javascript">
-            FHIR.oauth2.ready().then(function(client) {
-                
-                // Render the current patient (or any error)
-                client.patient.read().then(
-                    function(pt) {
-                        document.getElementById("patient").innerText = JSON.stringify(pt, null, 4);
-                    },
-                    function(error) {
-                        document.getElementById("patient").innerText = error.stack;
-                    }
-                );
-                
-                // Get MedicationRequests for the selected patient
-                client.request("/MedicationRequest?patient=" + client.patient.id, {
-                    resolveReferences: [ "medicationReference" ],
-                    graph: true
-                })
-                
-                // Reject if no MedicationRequests are found
-                .then(function(data) {
-                    if (!data.entry || !data.entry.length) {
-                        throw new Error("No medications found for the selected patient");
-                    }
-                    return data.entry;
-                })
-                 
-
-                // Render the current patient's medications (or any error)
-                .then(
-                    function(meds) {
-                        document.getElementById("meds").innerText = JSON.stringify(meds, null, 4);
-                    },
-                    function(error) {
-                        document.getElementById("meds").innerText = error.stack;
-                    }
-                );
-		    
-            }).catch(console.error);
 
  
 
@@ -95,12 +71,14 @@ fetchImmunizations().then(data => {
 });
 		
 		
-	
-	
 	</script>
-</body>
+
+        <div id="container" style="width:100%; height:200px;"></div>
+        
+    </body>
 </html>
-  
+	
+	
         
     
 
